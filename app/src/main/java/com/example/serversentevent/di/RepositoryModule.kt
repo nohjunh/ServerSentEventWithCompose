@@ -1,9 +1,7 @@
 package com.example.serversentevent.di
 
 import com.example.serversentevent.data.MatchRepositoryImpl
-import com.example.serversentevent.data.TestRepositoryImpl
 import com.example.serversentevent.domain.MatchRepository
-import com.example.serversentevent.domain.TestRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -17,12 +15,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
-
-    @Singleton
-    @Binds
-    abstract fun bindTestRepository (
-        testRepositoryImpl: TestRepositoryImpl
-    ): TestRepository
 
     @Singleton
     @Binds

@@ -11,10 +11,11 @@ import javax.inject.Inject
 
 class MatchDataSourceImpl @Inject constructor(
     @SSEOkHttpClient private val okHttpClient: OkHttpClient,
-    @SSERequestBuilder private val request: Request
+    @SSERequestBuilder private val request: Request.Builder
 ) : MatchDataSource {
-    override fun createEventSource(listener: EventSourceListener): EventSource {
-        return EventSources.createFactory(okHttpClient)
-            .newEventSource(request, listener)
+
+    override fun connectEvent(url: String, listener: EventSourceListener): EventSource {
+        val request = request.url(url).build()
+        return EventSources.createFactory(okHttpClient).newEventSource(request, listener)
     }
 }

@@ -1,3 +1,4 @@
+
 package com.example.serversentevent.di
 
 import android.content.Context
@@ -40,12 +41,11 @@ object ConfigModule {
     @SSERequestBuilder
     @Provides
     @Singleton
-    fun provideRequestBuilder(): Request =
+    fun provideRequestBuilder(): Request.Builder =
         Request.Builder()
-            .url("http://172.20.10.11:8080/api/match/event")
             //.header("Accept", "application/json; q=0.5")
+            .header("Authorization", "testToken")
             .addHeader("Content-Type", "text/event-stream")
-            .build()
 
     @NormalOkHttpClient
     @Singleton
