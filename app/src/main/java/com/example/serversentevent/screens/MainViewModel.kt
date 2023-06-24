@@ -1,26 +1,25 @@
 package com.example.serversentevent.screens
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.serversentevent.domain.MatchUseCase
+import com.example.serversentevent.domain.CreateMatchEventSourceUseCase
 import com.example.serversentevent.domain.TestUseCase
 import com.example.serversentevent.network.ApiResponse
 import com.example.serversentevent.network.models.MatchResponse
 import com.example.serversentevent.network.models.QuestionItem
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.Response
 import okhttp3.sse.EventSource
 import okhttp3.sse.EventSourceListener
-import okhttp3.sse.EventSources
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 data class TestState(
@@ -28,14 +27,14 @@ data class TestState(
 )
 
 data class MatchState(
-    val response: MatchResponse
-)
+    val response: MatchResponse = MatchResponse()
 
+)
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val testUseCase: TestUseCase,
-    private val matchUseCase: MatchUseCase
+    private val createMatchEventSourceUseCase: CreateMatchEventSourceUseCase
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(TestState())
@@ -44,15 +43,15 @@ class MainViewModel @Inject constructor(
     private val _matchState = MutableStateFlow(MatchState())
     val matchState: StateFlow<MatchState> = _matchState.asStateFlow()
 
+    private var matchEventSource: EventSource? = null
+
     private val eventSourceListener = object : EventSourceListener() {
         override fun onOpen(eventSource: EventSource, response: Response) {
-            super.onOpen(eventSource, response)
-            Timber.tag("TEST").d("Connection Opened")
+            Timber.tag("TEST").d("Connection Success")
         }
 
         override fun onClosed(eventSource: EventSource) {
-            super.onClosed(eventSource)
-            Timber.tag("TEST").d("Connection Closed")
+            Timber.tag("TEST").d("Connection closed")
         }
 
         override fun onEvent(
@@ -61,13 +60,31 @@ class MainViewModel @Inject constructor(
             type: String?,
             data: String
         ) {
-            super.onEvent(eventSource, id, type, data)
-            Timber.tag("TEST").d("On Event Received! Data -: $data")
+            // Parse JSON data
+            val gson = Gson()
+            val eventData = gson.fromJson(data, MatchResponse::class.java)
+            Timber.tag("TEST").d("On Event Received! isSuccess -: ${eventData.isSuccess}")
+            Timber.tag("TEST").d("On Event Received! message -: ${eventData.message}")
         }
 
-        override fun onFailure(eventSource: EventSource, t: Throwable?, response: Response?) {
-            super.onFailure(eventSource, t, response)
-            Timber.tag("TEST").d("On Failure -: ${response?.body}")
+        override fun onFailure(
+            eventSource: EventSource,
+            t: Throwable?,
+            response: Response?
+        ) {
+            Timber.tag("TEST").d("On Failure -: ${response?.body?.string()}")
+        }
+    }
+
+    fun createEventSource() {
+        viewModelScope.launch {
+            matchEventSource = createMatchEventSourceUseCase.execute(eventSourceListener)
+        }
+    }
+
+    fun closeEventSource() {
+        viewModelScope.launch {
+            matchEventSource?.cancel()
         }
     }
 
@@ -98,7 +115,4 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun connectSSEServer() = viewModelScope.launch {
-        matchUseCase.getEventSource(eventSourceListener)
-    }
 }

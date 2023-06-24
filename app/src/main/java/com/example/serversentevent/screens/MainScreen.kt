@@ -1,5 +1,6 @@
 package com.example.serversentevent.screens
 
+import android.service.autofill.FieldClassification.Match
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,13 +30,16 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val matchState by viewModel.matchState.collectAsState()
 
-    Content(uiState)
+    Content(viewModel, uiState, matchState)
 }
 
 @Composable
 fun Content(
-    state: TestState
+    viewModel: MainViewModel,
+    state: TestState,
+    matchState: MatchState
 ) {
     Row(
         modifier = Modifier
@@ -42,6 +47,21 @@ fun Content(
             .background(Color.White)
     ) {
         val dataSet: List<QuestionItem> = state.dataSet
+
+        Button(
+            onClick = {
+                viewModel.createEventSource() }
+        ) {
+            Text("Create EventSource")
+        }
+
+
+        Button(
+            onClick = {
+                viewModel.closeEventSource() }
+        ) {
+            Text("Close EventSource")
+        }
 
         LazyColumn {
             item {

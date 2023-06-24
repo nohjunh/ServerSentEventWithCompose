@@ -1,6 +1,8 @@
 package com.example.serversentevent.di
 
+import com.example.serversentevent.data.MatchRepositoryImpl
 import com.example.serversentevent.data.TestRepositoryImpl
+import com.example.serversentevent.domain.MatchRepository
 import com.example.serversentevent.domain.TestRepository
 import dagger.Binds
 import dagger.Module
@@ -21,5 +23,12 @@ abstract class RepositoryModule {
     abstract fun bindTestRepository (
         testRepositoryImpl: TestRepositoryImpl
     ): TestRepository
+
+    @Singleton
+    @Binds
+    abstract fun bindMatchRepository (
+        matchRepositoryImpl: MatchRepositoryImpl
+    ): MatchRepository
+
 
 }

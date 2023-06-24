@@ -40,9 +40,12 @@ object ConfigModule {
     @SSERequestBuilder
     @Provides
     @Singleton
-    fun provideRequestBuilder(): Request.Builder =
+    fun provideRequestBuilder(): Request =
         Request.Builder()
-            .url("https://test-sse-backend.herokuapp.com/events")
+            .url("http://172.20.10.11:8080/api/match/event")
+            //.header("Accept", "application/json; q=0.5")
+            .addHeader("Content-Type", "text/event-stream")
+            .build()
 
     @NormalOkHttpClient
     @Singleton
